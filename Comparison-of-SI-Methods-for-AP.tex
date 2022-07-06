@@ -180,24 +180,24 @@ concentrations.
 
 \begin{figure}[hbt!]
 \begin{center} 
-  \includegraphics[width=.7\textwidth]{Figures/semivariogram.png}
+  \includegraphics[width=.5\textwidth]{Figures/semivariogram.png}
 \end{center} 
 \caption[Conceptual process of kriging measurements]{Conceptual process of kriging measurements $($captured from Datacamp.com lectures$)$} 
 \label{fig:semivariogram} 
 \end{figure}
 
-Figure\textasciitilde{}\ref{fig:semivariogram} explains the process to
-generate a semivariogram. First, the distance against half-squared
-distances between all pair points is plotted in the variogram cloud (see
-Figure\textasciitilde{}\ref{fig:semivariogram}a). The dots in the
-variogram cloud are allocated to an arbitrary number of imaginary bins
-(10 bins are used for this study). The mean of each bin becomes a
-representative point which normally has an upward trend as the distance
-increases to some extent and then levels off (see
-Figure\textasciitilde{}\ref{fig:semivariogram}b). This means that the
-closer the distance, the more similar the values are, and vice versa.
-Finally, an asymptotic curve, termed semivariogram, is drawn through the
-points (see Figure\textasciitilde{}\ref{fig:semivariogram}c).
+Figure \ref{fig:semivariogram} explains the process to generate a
+semivariogram. First, the distance against half-squared distances
+between all pair points is plotted in the variogram cloud (see Figure
+\ref{fig:semivariogram}a). The dots in the variogram cloud are allocated
+to an arbitrary number of imaginary bins (10 bins are used for this
+study). The mean of each bin becomes a representative point which
+normally has an upward trend as the distance increases to some extent
+and then levels off (see Figure \ref{fig:semivariogram}b). This means
+that the closer the distance, the more similar the values are, and vice
+versa. Finally, an asymptotic curve, termed semivariogram, is drawn
+through the points (see
+Figure\textasciitilde{}\ref{fig:semivariogram}c).
 Range\footnote{The distance at which a spatial correlation exists.},
 partial
 sill\footnote{The upper limit of the semivariogram is the sill. A Sill minus a nugget is termed a partial-sill},
@@ -205,6 +205,15 @@ and
 nugget\footnote{Represents short scale randomness or noise in the regionalised variable [@Camana2020]}
 are the key parameters inside the model, and the kriged map is drawn
 based on the semivariogram \citep{Law2019}.
+
+\begin{verbatim}
+  myVario[[length(myVario)+1]] <- variogram(top.jan[[i]] ~ 1, top.jan, cutoff = 30000, width = 3000)
+  myList[[i]]  <- fit.variogram(myVario[[i]], 
+                                vgm(psill = 100,
+                                    nugget= 15,
+                                    model = "Ste"),
+                                fit.kappa = TRUE, fit.method = 6)
+\end{verbatim}
 
 \bibliography{RJreferences.bib}
 
