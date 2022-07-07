@@ -50,6 +50,19 @@ Some of the R packages that support spatial interpolations are gstat for Kriging
 ## Data
 This article explores the spatial and temporal patterns of pollution in Seoul as well as the extent to which background and roadside stations are similar or different. The NIER (National Institute of Environmental Research) provided 6 pollutants, PM\textsubscript{10}, PM\textsubscript{2.5}, NO\textsubscript{2}, CO, SO\textsubscript{2}, O\textsubscript{3}, which were released as an hourly aggregation. This study selected PM\textsubscript{10} as the main source that can causally result in human cancer and NO\textsubscript{2} as the main source that harms respiratory symptoms, whether constantly or instantaneously [@WHO2013].
 
+```r
+options(scipen = 100)
+library(tidyverse)
+library(sf)
+library(mgcv)
+library(raster)
+
+load("../Data/no2.RData")
+stations <- read_sf("../Data/stations_10km.shp")
+stations_df <- stations %>% filter (F.R == "Fixed")%>% st_set_geometry(NULL)
+seoul <- read_sf("../Data/Seoul_City.shp") %>% as_Spatial() %>% fortify()
+no2.winter <- merge(no2.win.bk, stations_df, by.x = c("Station.ID", "X", "Y"), by.y = c("Station", "X", "Y"))
+```
 
 Pollution data were collected from two different types of stations: background stations (installed on the rooftops of district offices), and roadside stations (close to the major roads which are strongly affected by nearby traffic). This study took into account 57 urban background stations and 19 roadside stations that were within 10km from the city boundary (see Figure \ref{fig:pollution_stations}). 
 Amongst these 76 stations, Seoul itself had 25 background stations and 15 roadside stations. Roadside data were retrieved from the 19 stations installed on the roads near the city centre, 8-lane junctions, and a highway entrance. The possible download period was between 01/01/2010 01:00 and 01/01/2018 00:00. Units are measured in ppb (parts per billion) for NO\textsubscript{2}, and µg/m\textsuperscript{3} for PM\textsubscript{10}.
@@ -67,14 +80,9 @@ Amongst these 76 stations, Seoul itself had 25 background stations and 15 roadsi
 
 
 ## Kriging: Conceptual Framework
-Kriging is a geostatistical method that interpolates an unknown location using the characterized mean and variance structures [@Kumar2007;@Kim2014]. 
-It assumes that the overall mean, distance, and variance of all observations are spatially autocorrelated from Tobler’s First Law of Geography: “Everything is related to everything else, but nearer things are more related than distant things”. For example, pollution concentrations less than 1 metre apart are likely to be similar, but less likely when the distance becomes larger. This context of the variability between the two values and their grouped distances (e.g. 0-100m, 101-200m) can be structurally applied over the region with a conceptual semivariogram. Once the semivariogram is produced, then the kriged map is produced together with an error map.
-
-
 To create a kriged map, there are a few steps to follow: 1) modelling an empirical semivariogram, 2) fitting the empirical model with a mathematical model, and 3) choosing the type of kriging according to the fit of the assumptions (i.e. data normality, stationarity, and whether the data has trends).
 
-
-### Understanding Semivariograms
+#### Creating a Semivariogram
 Spatial autocorrelation (or spatial dependency) is assessed by a semivariogram. Semivariograms apply the squared differences of measurements against distances between pairs of data points (see Equation~\ref{eq:semivariogram}). This means that all the pollution values at the 57 stations are compared between one another, and once calculated, the semivariogram is drawn. The conceptual semivariance can be estimated as below.
 
 
@@ -94,26 +102,49 @@ Spatial autocorrelation (or spatial dependency) is assessed by a semivariogram. 
 
 Directions are not considered in the current formula; however, this can be taken into account depending on the aspect of the study, for example, if the wind direction is dominantly affecting the pollution concentrations.
 
-
 \begin{figure}[hbt!]
 \begin{center} 
   \includegraphics[width=.5\textwidth]{Figures/semivariogram.png}
 \end{center} 
-\caption[Conceptual process of kriging measurements]{Conceptual process of kriging measurements $($captured from Datacamp.com lectures$)$} 
+\caption{Conceptual process of kriging measurements $($captured from Datacamp.com lectures$)$} 
 \label{fig:semivariogram} 
 \end{figure}
-
 
 Figure \ref{fig:semivariogram} explains the process to generate a semivariogram. First, the distance against half-squared distances between all pair points is plotted in the variogram cloud (see Figure \ref{fig:semivariogram}a). 
 The dots in the variogram cloud are allocated to an arbitrary number of imaginary bins (10 bins are used for this study). The mean of each bin becomes a representative point which normally has an upward trend as the distance increases to some extent and then levels off (see Figure \ref{fig:semivariogram}b).
 This means that the closer the distance, the more similar the values are, and vice versa. Finally, an asymptotic curve, termed semivariogram, is drawn through the points (see Figure~\ref{fig:semivariogram}c).
 Range\footnote{The distance at which a spatial correlation exists.}, partial sill\footnote{The upper limit of the semivariogram is the sill. A Sill minus a nugget is termed a partial-sill}, and nugget\footnote{Represents short scale randomness or noise in the regionalised variable [@Camana2020]} are the key parameters inside the model, and the kriged map is drawn based on the semivariogram [@Law2019].
 
+
 ```r
-myVario[[length(myVario)+1]] <- variogram(top.jan[[i]] ~ 1, top.jan, cutoff = 30000, width = 3000)
-myList[[i]]  <- fit.variogram(myVario[[i]], 
+myVario <- list()
+myList <- list()
+
+for(i in 1:20){
+  myVario[[length(myVario)+1]] <- variogram(top.jan[[i]] ~ 1, top.jan, cutoff = 30000, width = 3000)
+  myList[[i]]  <- fit.variogram(myVario[[i]], 
                                 vgm(psill = 100,
                                     nugget= 15,
                                     model = "Ste"),
                                 fit.kappa = TRUE, fit.method = 6)
+}
 ```
+
+* Here we set the width and the cutoff points
+
+```r
+library(gridExtra)
+plot(myVario[[1]],  myList[[1]],  main = "Jan 01st\nDay hours")
+```
+
+#### Prediction
+
+
+#### RMSE
+
+
+
+
+## 
+
+

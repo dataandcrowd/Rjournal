@@ -104,6 +104,20 @@ result in human cancer and NO\textsubscript{2} as the main source that
 harms respiratory symptoms, whether constantly or instantaneously
 \citep{WHO2013}.
 
+\begin{verbatim}
+options(scipen = 100)
+library(tidyverse)
+library(sf)
+library(mgcv)
+library(raster)
+
+load("../Data/no2.RData")
+stations <- read_sf("../Data/stations_10km.shp")
+stations_df <- stations %>% filter (F.R == "Fixed")%>% st_set_geometry(NULL)
+seoul <- read_sf("../Data/Seoul_City.shp") %>% as_Spatial() %>% fortify()
+no2.winter <- merge(no2.win.bk, stations_df, by.x = c("Station.ID", "X", "Y"), by.y = c("Station", "X", "Y"))
+\end{verbatim}
+
 Pollution data were collected from two different types of stations:
 background stations (installed on the rooftops of district offices), and
 roadside stations (close to the major roads which are strongly affected
@@ -150,7 +164,7 @@ fit of the assumptions (i.e.~data normality, stationarity, and whether
 the data has trends).
 
 \hypertarget{understanding-semivariograms}{%
-\subsubsection{Understanding
+\paragraph{Understanding
 Semivariograms}\label{understanding-semivariograms}}
 
 Spatial autocorrelation (or spatial dependency) is assessed by a
@@ -182,7 +196,7 @@ concentrations.
 \begin{center} 
   \includegraphics[width=.5\textwidth]{Figures/semivariogram.png}
 \end{center} 
-\caption[Conceptual process of kriging measurements]{Conceptual process of kriging measurements $($captured from Datacamp.com lectures$)$} 
+\caption{Conceptual process of kriging measurements $($captured from Datacamp.com lectures$)$} 
 \label{fig:semivariogram} 
 \end{figure}
 
@@ -207,13 +221,24 @@ are the key parameters inside the model, and the kriged map is drawn
 based on the semivariogram \citep{Law2019}.
 
 \begin{verbatim}
+myVario <- list()
+myList <- list()
+
+for(i in 1:20){
   myVario[[length(myVario)+1]] <- variogram(top.jan[[i]] ~ 1, top.jan, cutoff = 30000, width = 3000)
   myList[[i]]  <- fit.variogram(myVario[[i]], 
                                 vgm(psill = 100,
                                     nugget= 15,
                                     model = "Ste"),
                                 fit.kappa = TRUE, fit.method = 6)
+}
 \end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  Here we set the width and the cutoff points
+\end{itemize}
 
 \bibliography{RJreferences.bib}
 
