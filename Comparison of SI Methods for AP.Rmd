@@ -47,6 +47,32 @@ This study aims to compare spatial interpolation methods that can support the es
 Some of the R packages that support spatial interpolations are gstat for Kriging and mgcv for GAM. gstat runs on a three step process whereby 1) the empirical data are plotted as a variogram cloud, 2) the variogram cloud is fitted with one of the conceptual semivariograms, and 3) the semivariogram is estimates the values across the spatial extent. autofitVariogram can reduce the optimisation of steps 1 and 2, however, it might not detect the small-scale variability that is seen in air pollutants. As with Kriging, mgcv also requires a few steps to complete an interpolated outcome of GAM. The initial step is to choose a smoothing function, followed by a select of a number of knots to determine the ‘wiggliness’ of the spline, and the validation of the model’s robustness.
 -->
 
+
+## Geostatistics and Statistical Inference Models
+Recent literature of spatial statistics has shown advanced models such as a bayesian fused spatio-temporal kriging or mathematically sound equations to fit the domain contents. However, this article compares the typical Kriging and GAM that appears on a two dimensional space.
+
+### Similarities
+#### The distribution of the data should follow the bell curve
+The robustness of data is only meaningful when the basic assumption that the data is to follow the normal distribution is met. Hence, it is always essential to explore the data.
+
+#### Mean and the variation are important
+Both Universal Kriging and GAM work with the mean value. In universal kriging, it is important to find the average across the space
+
+
+### Differences
+* Distance vs shape of the Spline
+* Fitting the Semivariogram versus Adjusting the Knots and Wiggliness
+* Computing Time
+
+
+
+## Empirical Experiment using `gstat` and `mgcv`
+* Using 57 stations surrounding Seoul, this article runs two SI models
+* We use NO~2~ which chemically reacts well with O~3~ thus is sensitive day and night, and PM~10~ which is less sensitive to hourly differences but more sensitive to seasonal patterns
+* 
+
+
+<!--
 ## Data
 This article explores the spatial and temporal patterns of pollution in Seoul as well as the extent to which background and roadside stations are similar or different. The NIER (National Institute of Environmental Research) provided 6 pollutants, PM\textsubscript{10}, PM\textsubscript{2.5}, NO\textsubscript{2}, CO, SO\textsubscript{2}, O\textsubscript{3}, which were released as an hourly aggregation. This study selected PM\textsubscript{10} as the main source that can causally result in human cancer and NO\textsubscript{2} as the main source that harms respiratory symptoms, whether constantly or instantaneously [@WHO2013].
 
@@ -75,9 +101,6 @@ Amongst these 76 stations, Seoul itself had 25 background stations and 15 roadsi
  \caption{57 Background pollution stations that are considered for spatial interpolation (boundary area: Seoul)} 
  \label{fig:pollution_stations} 
 \end{figure}
-
-
-
 
 ## Kriging: Conceptual Framework
 To create a kriged map, there are a few steps to follow: 1) modelling an empirical semivariogram, 2) fitting the empirical model with a mathematical model, and 3) choosing the type of kriging according to the fit of the assumptions (i.e. data normality, stationarity, and whether the data has trends).
@@ -144,7 +167,5 @@ plot(myVario[[1]],  myList[[1]],  main = "Jan 01st\nDay hours")
 
 
 
-
-## 
-
+-->
 
